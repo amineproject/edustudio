@@ -1,0 +1,6 @@
+{
+  "name": "Nusantara EduStudio - Kurikulum Merdeka SMP",
+  "description": "Platform Generator Administrasi Pembelajaran Kurikulum Merdeka SMP (Fase D). Pembuatan Modul Ajar berdiferensiasi, ATP, LKPD, dan Asesmen terstandar BSKAP.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
