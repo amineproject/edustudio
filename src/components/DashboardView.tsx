@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ModuleCategory, ModuleItem, RecentDocument } from '../types';
 import { MODULES_LIST } from '../data/kurikulumData';
+import { SubjectPicker } from './SubjectPicker';
 
 interface DashboardViewProps {
   documents: RecentDocument[];
@@ -93,18 +94,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <span className="text-[11px] sm:text-xs text-[#444651] mr-1.5 font-medium">
                   Mapel:
                 </span>
-                <select
+                <SubjectPicker
                   value={activeSubject}
-                  onChange={(e) => onSubjectChange(e.target.value)}
-                  className="bg-transparent text-[11px] sm:text-xs text-[#0b1c30] font-bold focus:outline-none cursor-pointer pr-1"
-                  id="mapelSelect"
-                >
-                  <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                  <option value="Ilmu Pengetahuan Alam">IPA</option>
-                  <option value="Matematika">Matematika</option>
-                  <option value="Bahasa Inggris">Bahasa Inggris</option>
-                  <option value="Pendidikan Pancasila">Pancasila</option>
-                </select>
+                  onChange={onSubjectChange}
+                  compact
+                  allowCustomInput
+                />
               </div>
 
               <button

@@ -1,6 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
 import { createServer as createViteServer } from 'vite';
@@ -373,6 +374,128 @@ Sajikan dalam format Markdown terstruktur dari poin 1 sampai 8:
         message: 'Upstream AI model unavailable, using built-in assessment engine.',
       });
     }
+  });
+
+  // =========================================================================
+  // Multi-Device Synchronization & Server Persistence Endpoints
+  // Ensures mobile and desktop share the identical data, profile, and documents
+  // =========================================================================
+  const STORAGE_FILE = path.resolve(__dirname, 'server_storage.json');
+  
+  let sharedData: {
+    profile: any;
+    documents: any[];
+    customSubjects: string[];
+    customCps: any[];
+    supabaseConfig: { url: string; anonKey: string };
+  } = {
+    profile: null,
+    documents: [],
+    customSubjects: [],
+    customCps: [],
+    supabaseConfig: {
+      url: process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '',
+      anonKey: process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '',
+    },
+  };
+
+  // Attempt to restore persistent data from disk
+  try {
+    if (fs.existsSync(STORAGE_FILE)) {
+      const raw = fs.readFileSync(STORAGE_FILE, 'utf-8');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        sharedData = { ...sharedData, ...parsed };
+      }
+    }
+  } catch (e) {
+    console.warn('Could not read server_storage.json:', e);
+  }
+
+  const persistStorage = () => {
+    try {
+      fs.writeFileSync(STORAGE_FILE, JSON.stringify(sharedData, null, 2), 'utf-8');
+    } catch (e) {
+      console.warn('Could not write server_storage.json:', e);
+    }
+  };
+
+  // Shared Config Endpoints (Desktop sets, Mobile automatically retrieves)
+  app.get('/api/supabase-config', (_req, res) => {
+    res.json(sharedData.supabaseConfig);
+  });
+
+  app.post('/api/supabase-config', (req, res) => {
+    const { url, anonKey } = req.body;
+    if (url !== undefined) sharedData.supabaseConfig.url = String(url || '').trim();
+    if (anonKey !== undefined) sharedData.supabaseConfig.anonKey = String(anonKey || '').trim();
+    persistStorage();
+    res.json({ success: true, config: sharedData.supabaseConfig });
+  });
+
+  // Global Sync Endpoint
+  app.get('/api/sync', (_req, res) => {
+    res.json(sharedData);
+  });
+
+  app.post('/api/sync', (req, res) => {
+    const { profile, documents, customSubjects, customCps, supabaseConfig } = req.body;
+    if (profile) sharedData.profile = profile;
+    if (Array.isArray(documents) && documents.length > 0) {
+      // Merge unique documents
+      const existingMap = new Map(sharedData.documents.map((d) => [d.id, d]));
+      documents.forEach((d) => existingMap.set(d.id, d));
+      sharedData.documents = Array.from(existingMap.values());
+    }
+    if (Array.isArray(customSubjects) && customSubjects.length > 0) {
+      sharedData.customSubjects = Array.from(new Set([...sharedData.customSubjects, ...customSubjects]));
+    }
+    if (Array.isArray(customCps) && customCps.length > 0) {
+      const cpMap = new Map(sharedData.customCps.map((c) => [c.id, c]));
+      customCps.forEach((c) => cpMap.set(c.id, c));
+      sharedData.customCps = Array.from(cpMap.values());
+    }
+    if (supabaseConfig) {
+      if (supabaseConfig.url) sharedData.supabaseConfig.url = supabaseConfig.url;
+      if (supabaseConfig.anonKey) sharedData.supabaseConfig.anonKey = supabaseConfig.anonKey;
+    }
+    persistStorage();
+    res.json({ success: true, data: sharedData });
+  });
+
+  // Profile Save Endpoint
+  app.post('/api/profile', (req, res) => {
+    const profile = req.body;
+    if (profile) {
+      sharedData.profile = profile;
+      persistStorage();
+    }
+    res.json({ success: true, profile: sharedData.profile });
+  });
+
+  // Document Upsert Endpoint
+  app.post('/api/documents', (req, res) => {
+    const doc = req.body;
+    if (!doc || !doc.id) {
+      res.status(400).json({ error: 'Dokumen tidak valid' });
+      return;
+    }
+    const idx = sharedData.documents.findIndex((d) => d.id === doc.id);
+    if (idx >= 0) {
+      sharedData.documents[idx] = doc;
+    } else {
+      sharedData.documents.unshift(doc);
+    }
+    persistStorage();
+    res.json({ success: true, document: doc });
+  });
+
+  // Document Delete Endpoint
+  app.delete('/api/documents/:id', (req, res) => {
+    const docId = req.params.id;
+    sharedData.documents = sharedData.documents.filter((d) => d.id !== docId);
+    persistStorage();
+    res.json({ success: true, id: docId });
   });
 
   // Health check

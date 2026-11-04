@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { Header } from './components/Header';
 import { DashboardView } from './components/DashboardView';
@@ -17,6 +17,12 @@ import { CurriculumChatbot } from './components/CurriculumChatbot';
 import { SupabaseSqlModal } from './components/SupabaseSqlModal';
 import { INITIAL_DOCUMENTS, INITIAL_TEACHER_PROFILE } from './data/kurikulumData';
 import { RecentDocument, TeacherProfile } from './types';
+import {
+  saveDocumentToSupabase,
+  deleteDocumentFromSupabase,
+  saveProfileToSupabase,
+  syncAllDataAcrossDevices,
+} from './lib/supabase';
 
 export default function App() {
   // Navigation State
@@ -38,6 +44,10 @@ export default function App() {
     return saved ? JSON.parse(saved) : INITIAL_TEACHER_PROFILE;
   });
 
+  const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
+  const [syncStatusText, setSyncStatusText] = useState<string>('');
+
+  // Save changes to localStorage
   useEffect(() => {
     localStorage.setItem('edumerdeka_docs', JSON.stringify(documents));
   }, [documents]);
@@ -45,6 +55,37 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('edumerdeka_profile', JSON.stringify(profile));
   }, [profile]);
+
+  // Automated Multi-Device Sync on App Mount
+  // When opened on mobile or another device, automatically load shared profile & documents!
+  const runCloudSync = useCallback(async (isSilent = false) => {
+    if (!isSilent) setIsSyncingCloud(true);
+    try {
+      const result = await syncAllDataAcrossDevices(documents, profile);
+      if (result.syncedDocs && result.syncedDocs.length > 0) {
+        setDocuments(result.syncedDocs);
+      }
+      if (result.syncedProfile && result.syncedProfile.name) {
+        setProfile(result.syncedProfile);
+      }
+      if (!isSilent) {
+        if (result.source === 'supabase') {
+          setSyncStatusText('Data tersinkron dari Cloud Supabase.');
+        } else if (result.source === 'server') {
+          setSyncStatusText('Data tersinkron antar-perangkat.');
+        }
+        setTimeout(() => setSyncStatusText(''), 3000);
+      }
+    } catch (err) {
+      console.warn('Sync notice:', err);
+    } finally {
+      if (!isSilent) setIsSyncingCloud(false);
+    }
+  }, [documents, profile]);
+
+  useEffect(() => {
+    runCloudSync(false);
+  }, []);
 
   // Modal States
   const [isQuickDocOpen, setIsQuickDocOpen] = useState<boolean>(false);
@@ -151,25 +192,39 @@ export default function App() {
         : 'Asesmen') as RecentDocument['type'],
     };
 
-    setDocuments([newDoc, ...documents]);
+    setDocuments((prev) => [newDoc, ...prev]);
     setIsQuickDocOpen(false);
     setActiveDoc(newDoc);
     setIsDocEditorOpen(true);
+    // Persist immediately to cloud & server
+    saveDocumentToSupabase(newDoc, profile);
   };
 
-  // Save Document changes
+  // Save Document changes (handles both existing document updates and new document insertions)
   const handleSaveDocument = (updatedDoc: RecentDocument) => {
-    setDocuments((prev) =>
-      prev.map((d) => (d.id === updatedDoc.id ? updatedDoc : d))
-    );
+    setDocuments((prev) => {
+      const exists = prev.some((d) => d.id === updatedDoc.id);
+      return exists
+        ? prev.map((d) => (d.id === updatedDoc.id ? updatedDoc : d))
+        : [updatedDoc, ...prev];
+    });
     setActiveDoc(updatedDoc);
+    // Persist immediately to cloud & server
+    saveDocumentToSupabase(updatedDoc, profile);
   };
 
   // Delete Document
   const handleDeleteDocument = (id: string) => {
     if (window.confirm('Apakah Anda yakin ingin menghapus arsip dokumen ini?')) {
       setDocuments((prev) => prev.filter((d) => d.id !== id));
+      // Delete immediately from cloud & server
+      deleteDocumentFromSupabase(id);
     }
+  };
+
+  const handleUpdateProfile = (newProfile: TeacherProfile) => {
+    setProfile(newProfile);
+    saveProfileToSupabase(newProfile);
   };
 
   return (
@@ -194,6 +249,9 @@ export default function App() {
           profile={profile}
           onOpenProfile={() => setCurrentTab('pengaturan')}
           onOpenChatbot={() => setIsChatbotOpen(true)}
+          isSyncing={isSyncingCloud}
+          onManualSync={() => runCloudSync(false)}
+          syncStatusText={syncStatusText}
         />
 
         {/* Dynamic Route Content */}
@@ -254,7 +312,7 @@ export default function App() {
           {currentTab === 'pengaturan' && (
             <PengaturanView
               profile={profile}
-              onUpdateProfile={setProfile}
+              onUpdateProfile={handleUpdateProfile}
               documents={documents}
               onOpenSqlModal={() => setIsSqlModalOpen(true)}
             />

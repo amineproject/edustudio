@@ -14,9 +14,11 @@ export interface DeepLearningInput {
   totalStudents: number; // e.g. 32
   studentCharacteristics: string;
   initialCompetency: string;
-  facilities: string;
   learningModel: string; // 'Problem Based Learning (PBL)' | 'Project Based Learning (PjBL)' | etc.
   localContext: string; // Kearifan lokal / konteks lingkungan
+  facilities?: string;
+  headmasterName?: string;
+  headmasterNip?: string;
 }
 
 export interface DeepLearningResult {
@@ -49,6 +51,8 @@ export function generateDeepLearningModulOffline(input: DeepLearningInput): Deep
     facilities,
     learningModel,
     localContext,
+    headmasterName,
+    headmasterNip,
   } = input;
 
   const effectiveTp = targetTp || `Peserta didik mampu menganalisis, mengaplikasikan konsep ${topic}, serta merefleksikan solusinya dalam kehidupan nyata.`;
@@ -307,8 +311,8 @@ D. LEMBAR KARYA & REFLEKSI (MEREFLEKSIKAN):
 *Mengetahui,*  
 **Kepala Sekolah** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Guru Mata Pelajaran**
 
-*(........................................................)* &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${teacherName}**  
-NIP. .................................................... &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NIP. ${nip || '....................................................'}
+**${headmasterName || 'Kepala Sekolah'}** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${teacherName}**  
+NIP. ${headmasterNip || '....................................................'} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NIP. ${nip || '....................................................'}
 `;
 
   return {

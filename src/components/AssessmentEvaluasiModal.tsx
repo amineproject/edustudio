@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { AssessmentInput, AssessmentResult, generateAssessmentPlan } from '../utils/assessmentEngine';
 import { RecentDocument, TeacherProfile } from '../types';
+import { SubjectPicker } from './SubjectPicker';
+import { getRecommendedElements } from '../utils/subjectManager';
 
 interface AssessmentEvaluasiModalProps {
   isOpen: boolean;
@@ -41,32 +43,53 @@ export const AssessmentEvaluasiModal: React.FC<AssessmentEvaluasiModalProps> = (
   const [copiedToast, setCopiedToast] = useState(false);
 
   useEffect(() => {
-    if (subject === 'Bahasa Indonesia') {
-      if (!topic) setTopic('Teks Laporan Hasil Observasi (LHO) Lingkungan Hidup');
+    const subLower = subject.toLowerCase();
+    const recommended = getRecommendedElements(subject);
+
+    if (subLower.includes('indonesia')) {
+      if (!initialTopic) setTopic('Teks Laporan Hasil Observasi (LHO) Lingkungan Hidup');
       setCpElement('Menyimak & Menulis');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu menganalisis struktur dan kaidah kebahasaan teks LHO serta menyusun teks observasi objektif berbasis fakta.');
       }
-    } else if (subject === 'Matematika') {
-      if (!topic) setTopic('Operasi Aljabar & Persamaan Linear Satu Variabel');
+    } else if (subLower.includes('matematika')) {
+      if (!initialTopic) setTopic('Operasi Aljabar & Persamaan Linear Satu Variabel');
       setCpElement('Aljabar & Bilangan');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu memodelkan situasi matematis kontekstual ke dalam bentuk aljabar dan menyelesaikannya secara presisi.');
       }
-    } else if (subject.includes('IPA') || subject.includes('Alam')) {
-      if (!topic) setTopic('Klasifikasi Makhluk Hidup & Ekosistem Mikro');
+    } else if (subLower.includes('ipa') || subLower.includes('alam')) {
+      if (!initialTopic) setTopic('Klasifikasi Makhluk Hidup & Ekosistem Mikro');
       setCpElement('Pemahaman Sains & Keterampilan Proses');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu mengklasifikasikan spesimen makhluk hidup berdasarkan karakteristik morfologis dan mikroskopis.');
       }
+    } else if (subLower.includes('ips') || subLower.includes('sosial')) {
+      if (!initialTopic) setTopic('Konektivitas Antar-Ruang dan Dampak Ekonomi Masyarakat');
+      setCpElement('Pemahaman Konsep & Inkuiri');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu menganalisis pengaruh interaksi keruangan terhadap pemenuhan kebutuhan ekonomi dan pelestarian lingkungan.');
+      }
+    } else if (subLower.includes('inggris')) {
+      if (!initialTopic) setTopic('Descriptive Text & Daily Routines Communication');
+      setCpElement('Reading & Writing');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu menganalisis unsur kebahasaan dan struktur teks deskriptif serta menyusun teks deskripsi tertulis.');
+      }
+    } else if (subLower.includes('informatika') || subLower.includes('komputer')) {
+      if (!initialTopic) setTopic('Analisis Masalah Komputasional dan Pemodelan Data');
+      setCpElement('Berpikir Komputasional & Algoritma');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu memecahkan persoalan komputasi logis dan merancang representasi algoritma terstruktur.');
+      }
     } else {
-      if (!topic) setTopic('Norma dan Kepatuhan Hukum dalam Kehidupan Bermasyarakat');
-      setCpElement('UUD NRI 1945 & Norma');
-      if (!targetTp) {
-        setTargetTp('Peserta didik mampu menganalisis pentingnya ketaatan norma dan hak kewajiban warga negara dalam keseharian.');
+      if (!initialTopic) setTopic(`Asesmen Kompetensi Pokok ${subject}`);
+      setCpElement(recommended.slice(0, 2).join(' & '));
+      if (!initialTp) {
+        setTargetTp(`Peserta didik mampu membuktikan penguasaan konsep, penalaran analitis, dan penerapan keterampilan nyata dalam mata pelajaran ${subject}.`);
       }
     }
-  }, [subject]);
+  }, [subject, initialTopic, initialTp]);
 
   if (!isOpen) return null;
 
@@ -218,18 +241,12 @@ export const AssessmentEvaluasiModal: React.FC<AssessmentEvaluasiModalProps> = (
               {/* Grid 1: Subject, Grade, Semester */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1">Mata Pelajaran</label>
-                  <select
+                  <SubjectPicker
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#0051d5] focus:outline-none bg-white font-semibold"
-                  >
-                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                    <option value="Matematika">Matematika</option>
-                    <option value="Ilmu Pengetahuan Alam">Ilmu Pengetahuan Alam (IPA)</option>
-                    <option value="Bahasa Inggris">Bahasa Inggris</option>
-                    <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                  </select>
+                    onChange={(newSub) => setSubject(newSub)}
+                    label="Mata Pelajaran"
+                    required
+                  />
                 </div>
 
                 <div>

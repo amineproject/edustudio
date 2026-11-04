@@ -6,6 +6,7 @@ export const INITIAL_TEACHER_PROFILE: TeacherProfile = {
   school: 'SMP Negeri 1 Nusantara',
   nip: '19850412 200902 2 003',
   headmaster: 'Drs. H. Bambang Suryono, M.Pd.',
+  headmasterNip: '19720315 199803 1 004',
   academicYear: '2024/2025',
   semester: 'Genap',
 };

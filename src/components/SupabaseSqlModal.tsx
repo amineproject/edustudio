@@ -22,11 +22,15 @@ CREATE TABLE IF NOT EXISTS profiles (
     role TEXT DEFAULT 'Guru Penggerak • SMP Negeri 1',
     school_name TEXT NOT NULL,
     headmaster_name TEXT NOT NULL,
+    headmaster_nip VARCHAR(50),
     academic_year VARCHAR(20) DEFAULT '2024/2025',
     semester VARCHAR(10) DEFAULT 'Genap',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Pastikan kolom headmaster_nip ada jika tabel profiles sudah pernah dibuat sebelumnya
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS headmaster_nip VARCHAR(50);
 
 -- 2. Tabel Dokumen Perencanaan Kurikulum (Modul 1: CP, TP, ATP)
 CREATE TABLE IF NOT EXISTS curriculum_plans (
@@ -77,11 +81,26 @@ CREATE TABLE IF NOT EXISTS assessment_plans (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 5. Tabel Terpadu Dokumen Pembelajaran (Sinkronisasi Otomatis Desktop & Mobile)
+CREATE TABLE IF NOT EXISTS recent_documents (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    sub_title TEXT,
+    subject VARCHAR(100) NOT NULL,
+    fase VARCHAR(50) NOT NULL,
+    status VARCHAR(50) DEFAULT 'Siap Cetak / PDF',
+    type VARCHAR(50) NOT NULL,
+    content TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Aktifkan Row Level Security (RLS)
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE curriculum_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE modul_ajar ENABLE ROW LEVEL SECURITY;
 ALTER TABLE assessment_plans ENABLE ROW LEVEL SECURITY;
+ALTER TABLE recent_documents ENABLE ROW LEVEL SECURITY;
 
 -- Kebijakan Akses Publik Terbuka untuk Aplikasi Guru (Anon Key)
 CREATE POLICY "Akses publik untuk membaca profiles" ON profiles FOR SELECT USING (true);
@@ -94,7 +113,10 @@ CREATE POLICY "Akses publik untuk membaca modul_ajar" ON modul_ajar FOR SELECT U
 CREATE POLICY "Akses publik untuk mengelola modul_ajar" ON modul_ajar FOR ALL USING (true);
 
 CREATE POLICY "Akses publik untuk membaca assessment_plans" ON assessment_plans FOR SELECT USING (true);
-CREATE POLICY "Akses publik untuk mengelola assessment_plans" ON assessment_plans FOR ALL USING (true);`;
+CREATE POLICY "Akses publik untuk mengelola assessment_plans" ON assessment_plans FOR ALL USING (true);
+
+CREATE POLICY "Akses publik untuk membaca recent_documents" ON recent_documents FOR SELECT USING (true);
+CREATE POLICY "Akses publik untuk mengelola recent_documents" ON recent_documents FOR ALL USING (true);`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(sqlSchema);

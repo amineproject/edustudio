@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CP_DATABASE } from '../data/kurikulumData';
+import { saveCustomSubject } from '../utils/subjectManager';
 
 interface QuickDocModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export const QuickDocModal: React.FC<QuickDocModalProps> = ({
 }) => {
   const [faseClass, setFaseClass] = useState('Fase D - Kelas VII');
   const [selectedSubject, setSelectedSubject] = useState(initialSubject);
+  const [customSubjectText, setCustomSubjectText] = useState('');
   const [docType, setDocType] = useState(initialDocType);
   const [activeSourceTab, setActiveSourceTab] = useState<'database' | 'upload'>('database');
   const [cpSearch, setCpSearch] = useState('');
@@ -287,6 +289,39 @@ export const QuickDocModal: React.FC<QuickDocModalProps> = ({
                     </button>
                   );
                 })}
+              </div>
+
+              {/* Custom Subject Direct Input in QuickDocModal */}
+              <div className="p-2.5 bg-[#f8faff] border-t border-[#e2e8f0] flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="flex items-center gap-1.5 flex-1">
+                  <span className="material-symbols-outlined text-[#0051d5] text-[18px]">
+                    edit_note
+                  </span>
+                  <input
+                    type="text"
+                    placeholder="Atau ketik mapel sendiri (contoh: Informatika, IPS, Prakarya)..."
+                    value={customSubjectText}
+                    onChange={(e) => {
+                      setCustomSubjectText(e.target.value);
+                      if (e.target.value.trim()) {
+                        setSelectedSubject(e.target.value.trim());
+                      }
+                    }}
+                    className="w-full bg-white border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs focus:ring-1 focus:ring-[#0051d5] focus:outline-none font-medium"
+                  />
+                </div>
+                {customSubjectText.trim() && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      saveCustomSubject(customSubjectText.trim());
+                      alert(`Mata pelajaran "${customSubjectText.trim()}" disimpan ke daftar favorit.`);
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-[#00236f] text-white text-[10.5px] font-bold hover:bg-[#00174d] shrink-0"
+                  >
+                    Simpan Mapel
+                  </button>
+                )}
               </div>
             </div>
           </div>

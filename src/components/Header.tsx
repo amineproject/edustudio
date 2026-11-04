@@ -8,6 +8,9 @@ interface HeaderProps {
   profile: TeacherProfile;
   onOpenProfile: () => void;
   onOpenChatbot?: () => void;
+  isSyncing?: boolean;
+  onManualSync?: () => void;
+  syncStatusText?: string;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -17,6 +20,9 @@ export const Header: React.FC<HeaderProps> = ({
   profile,
   onOpenProfile,
   onOpenChatbot,
+  isSyncing = false,
+  onManualSync,
+  syncStatusText,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(2);
@@ -98,6 +104,30 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="material-symbols-outlined text-[16px] sm:text-[17px]">psychology</span>
               <span className="hidden sm:inline">Tanya Pakar AI</span>
               <span className="sm:hidden">Pakar AI</span>
+            </button>
+          )}
+
+          {/* Cloud Sync Button */}
+          {onManualSync && (
+            <button
+              onClick={onManualSync}
+              disabled={isSyncing}
+              className={`p-1.5 sm:p-2 rounded-lg text-[#444651] hover:bg-[#e5eeff] hover:text-[#0051d5] transition-colors relative flex items-center justify-center ${
+                isSyncing ? 'opacity-80' : ''
+              }`}
+              title={syncStatusText || (isSyncing ? 'Sinkronisasi cloud & server...' : 'Sinkronkan Data Antar-Perangkat')}
+              type="button"
+            >
+              <span
+                className={`material-symbols-outlined text-[20px] sm:text-[22px] ${
+                  isSyncing ? 'animate-spin text-[#0051d5]' : ''
+                }`}
+              >
+                sync
+              </span>
+              {isSyncing && (
+                <span className="sr-only">Sinkronisasi sedang berjalan</span>
+              )}
             </button>
           )}
 

@@ -56,8 +56,8 @@ JUDUL DOKUMEN       : ${docTitle}
 MATA PELAJARAN      : ${documentData.subject}
 FASE / KELAS        : ${documentData.fase}
 SEMESTER            : ${profile.semester} TA ${profile.academicYear}
-PENYUSUN            : ${profile.name} (NIP. ${profile.nip})
-KEPALA SEKOLAH      : ${profile.headmaster}
+PENYUSUN            : ${profile.name} (NIP. ${profile.nip || '-'})
+KEPALA SEKOLAH      : ${profile.headmaster} (NIP. ${profile.headmasterNip || '-'})
 ALOKASI WAKTU       : ${alokasiWaktu}
 
 ------------------------------------------------------------------------
@@ -394,7 +394,9 @@ NIP. 19720815 199803 1 004                  NIP. ${profile.nip}
                   <p className="font-bold">Kepala Sekolah</p>
                   <div className="h-16"></div>
                   <p className="font-bold underline">{profile.headmaster}</p>
-                  <p className="text-[10px] text-slate-500">NIP. 19720815 199803 1 004</p>
+                  <p className="text-[10px] text-slate-500">
+                    NIP. {profile.headmasterNip || '........................................'}
+                  </p>
                 </div>
 
                 <div className="text-center">

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { CP_DATABASE } from '../data/kurikulumData';
 import { DeepLearningInput, DeepLearningResult, generateDeepLearningModul } from '../utils/deepLearningEngine';
 import { RecentDocument, TeacherProfile } from '../types';
+import { SubjectPicker } from './SubjectPicker';
+import { getRecommendedElements } from '../utils/subjectManager';
 
 interface DeepLearningModulModalProps {
   isOpen: boolean;
@@ -52,32 +54,65 @@ export const DeepLearningModulModal: React.FC<DeepLearningModulModalProps> = ({
   const [copiedToast, setCopiedToast] = useState(false);
 
   useEffect(() => {
-    if (subject === 'Bahasa Indonesia') {
+    const subLower = subject.toLowerCase();
+    const recommended = getRecommendedElements(subject);
+
+    if (subLower.includes('indonesia')) {
       setTopic('Teks Laporan Hasil Observasi (LHO) - Eksplorasi Keanekaragaman Hayati');
       setCpElement('Menyimak & Menulis');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu menganalisis struktur teks LHO dan menyusun laporan observasi ilmiah secara kritis dan orisinal.');
       }
-    } else if (subject === 'Matematika') {
+    } else if (subLower.includes('matematika')) {
       setTopic('Persamaan Linier Satu Variabel & Penerapan Jual Beli Pasar Tradisional');
       setCpElement('Aljabar & Bilangan');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu memodelkan situasi nyata ke dalam persamaan aljabar dan menyelesaikannya secara akurat.');
       }
-    } else if (subject.includes('IPA') || subject.includes('Alam')) {
+    } else if (subLower.includes('ipa') || subLower.includes('alam')) {
       setTopic('Klasifikasi Makhluk Hidup & Investigasi Ekosistem Mikro');
       setCpElement('Pemahaman IPA & Keterampilan Proses');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu merancang penyelidikan ilmiah menggunakan mikroskop dan mengklasifikasikan spesimen flora/fauna lokal.');
       }
-    } else {
+    } else if (subLower.includes('ips') || subLower.includes('sosial')) {
+      setTopic('Keragaman Sosial Budaya & Interaksi Ekonomi Antar-Wilayah');
+      setCpElement('Pemahaman Konsep & Keterampilan Inkuiri');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu menganalisis pengaruh kondisi geografis terhadap aktivitas ekonomi dan keragaman sosial budaya.');
+      }
+    } else if (subLower.includes('inggris')) {
+      setTopic('Describing People, Daily Activities & Personal Routine');
+      setCpElement('Listening & Speaking');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu bertukar ide dan mendeskripsikan aktivitas harian dengan kosakata dan tata bahasa yang tepat.');
+      }
+    } else if (subLower.includes('informatika') || subLower.includes('komputer')) {
+      setTopic('Berpikir Komputasional & Perancangan Solusi Algoritmik');
+      setCpElement('Berpikir Komputasional & Algoritma');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu merumuskan persoalan kontekstual melalui dekomposisi dan menghasilkan algoritma terstruktur.');
+      }
+    } else if (subLower.includes('pjok') || subLower.includes('olahraga')) {
+      setTopic('Keterampilan Gerak Spesifik Permainan Invasi dan Kebugaran');
+      setCpElement('Keterampilan Gerak & Pemanfaatan Gerak');
+      if (!initialTp) {
+        setTargetTp('Peserta didik mampu mempraktikkan keterampilan gerak spesifik dan menginternalisasi nilai sportivitas.');
+      }
+    } else if (subLower.includes('pancasila')) {
       setTopic('Penguatan Nilai-nilai Gotong Royong dalam Kehidupan Bermasyarakat');
       setCpElement('Pancasila & UUD NRI 1945');
-      if (!targetTp) {
+      if (!initialTp) {
         setTargetTp('Peserta didik mampu mengidentifikasi dan mempraktikkan norma hukum dan kebiasaan santun di lingkungan sekolah.');
       }
+    } else {
+      setTopic(`Eksplorasi Konsep Esensial dan Studi Kasus ${subject}`);
+      setCpElement(recommended.slice(0, 2).join(' & '));
+      if (!initialTp) {
+        setTargetTp(`Peserta didik mampu memahami konsep mendasar, menerapkan prosedur pemecahan masalah, dan menyajikan refleksi bermakna dalam materi ${subject}.`);
+      }
     }
-  }, [subject]);
+  }, [subject, initialTp]);
 
   if (!isOpen) return null;
 
@@ -102,6 +137,8 @@ export const DeepLearningModulModal: React.FC<DeepLearningModulModalProps> = ({
       facilities,
       learningModel,
       localContext,
+      headmasterName: profile.headmaster,
+      headmasterNip: profile.headmasterNip,
     };
 
     try {
@@ -236,18 +273,12 @@ export const DeepLearningModulModal: React.FC<DeepLearningModulModalProps> = ({
               {/* Grid 1: Subject, Grade, Model */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1">Mata Pelajaran</label>
-                  <select
+                  <SubjectPicker
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#0051d5] focus:outline-none bg-white font-semibold"
-                  >
-                    <option value="Bahasa Indonesia">Bahasa Indonesia</option>
-                    <option value="Matematika">Matematika</option>
-                    <option value="Ilmu Pengetahuan Alam">Ilmu Pengetahuan Alam (IPA)</option>
-                    <option value="Bahasa Inggris">Bahasa Inggris</option>
-                    <option value="Pendidikan Pancasila">Pendidikan Pancasila</option>
-                  </select>
+                    onChange={(newSub) => setSubject(newSub)}
+                    label="Mata Pelajaran"
+                    required
+                  />
                 </div>
 
                 <div>

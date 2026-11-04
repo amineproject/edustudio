@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { CP_DATABASE } from '../data/kurikulumData';
 import { CurriculumInput, CurriculumGenerationResult, generateCurriculumPlan } from '../utils/curriculumEngine';
-import { RecentDocument } from '../types';
+import { RecentDocument, CapaianPembelajaran } from '../types';
+import { SubjectPicker } from './SubjectPicker';
+import { getRecommendedElements } from '../utils/subjectManager';
 
 interface CurriculumExpertModalProps {
   isOpen: boolean;
@@ -31,6 +33,8 @@ export const CurriculumExpertModal: React.FC<CurriculumExpertModalProps> = ({
   const [selectedElements, setSelectedElements] = useState<string[]>([]);
   const [coreTopic, setCoreTopic] = useState<string>('');
   const [totalJp, setTotalJp] = useState<number>(72);
+  const [customElementsList, setCustomElementsList] = useState<string[]>([]);
+  const [newCustomElementInput, setNewCustomElementInput] = useState<string>('');
 
   // Optional Inputs
   const [officialCpText, setOfficialCpText] = useState<string>('');
@@ -48,51 +52,103 @@ export const CurriculumExpertModal: React.FC<CurriculumExpertModalProps> = ({
 
   // Sync elements when subject changes
   useEffect(() => {
-    const relevantCps = CP_DATABASE.filter((c) =>
+    // Read combined database (default + user-saved CP)
+    let combinedCps: CapaianPembelajaran[] = CP_DATABASE;
+    try {
+      const stored = localStorage.getItem('custom_cp_database');
+      if (stored) {
+        combinedCps = JSON.parse(stored);
+      }
+    } catch (e) {
+      // fallback
+    }
+
+    const relevantCps = combinedCps.filter((c) =>
       c.subject.toLowerCase().includes(subject.toLowerCase()) ||
       subject.toLowerCase().includes(c.subject.toLowerCase())
     );
+
+    const recommended = getRecommendedElements(subject);
+
     if (relevantCps.length > 0) {
-      setSelectedElements(relevantCps.map((c) => c.element));
+      const els = Array.from(new Set([...relevantCps.map((c) => c.element), ...recommended]));
+      setSelectedElements(els.slice(0, 3));
       setOfficialCpText(relevantCps[0].deskripsi);
     } else {
-      setSelectedElements(['Pemahaman Konseptual', 'Keterampilan Proses']);
-      setOfficialCpText('Peserta didik mampu menguasai capaian pembelajaran fase D sesuai regulasi BSKAP.');
+      setSelectedElements(recommended.slice(0, 3));
+      setOfficialCpText(
+        `Peserta didik mampu memahami konsep mendasar, menerapkan prosedur/keterampilan ilmiah, dan mengomunikasikan hasil pemikiran/karya nyata dalam mata pelajaran ${subject} Fase D sesuai regulasi BSKAP.`
+      );
     }
 
+    // Set topic recommendation if empty or switching standard subjects
     if (subject === 'Bahasa Indonesia') {
       setCoreTopic('Teks Laporan Hasil Observasi (LHO) & Menyimak Kritis');
       setTotalJp(72);
     } else if (subject === 'Matematika') {
       setCoreTopic('Bilangan Bulat, Pecahan, dan Pemodelan Aljabar');
       setTotalJp(72);
-    } else if (subject.includes('IPA') || subject.includes('Alam')) {
+    } else if (subject.toLowerCase().includes('ipa') || subject.toLowerCase().includes('alam')) {
       setCoreTopic('Hakikat Sains, Pengukuran, dan Klasifikasi Materi');
       setTotalJp(72);
-    } else if (subject.includes('Inggris')) {
+    } else if (subject.toLowerCase().includes('ips') || subject.toLowerCase().includes('sosial')) {
+      setCoreTopic('Keragaman Sosial, Ekonomi, dan Konektivitas Antar-Ruang');
+      setTotalJp(72);
+    } else if (subject.toLowerCase().includes('inggris')) {
       setCoreTopic('Describing People, Daily Activities & Narrative');
       setTotalJp(72);
-    } else {
+    } else if (subject.toLowerCase().includes('pancasila')) {
       setCoreTopic('Norma, Hak dan Kewajiban Warga Negara');
+      setTotalJp(54);
+    } else if (subject.toLowerCase().includes('informatika') || subject.toLowerCase().includes('komputer')) {
+      setCoreTopic('Berpikir Komputasional & Algoritma Sederhana');
+      setTotalJp(72);
+    } else if (subject.toLowerCase().includes('pjok') || subject.toLowerCase().includes('olahraga')) {
+      setCoreTopic('Keterampilan Gerak Spesifik Permainan Bola Besar');
+      setTotalJp(72);
+    } else if (subject.toLowerCase().includes('seni')) {
+      setCoreTopic('Apresiasi dan Eksplorasi Karya Seni Kontekstual');
+      setTotalJp(54);
+    } else if (subject.toLowerCase().includes('prakarya')) {
+      setCoreTopic('Rancangan dan Pembuatan Produk Kerajinan/Pengolahan');
+      setTotalJp(54);
+    } else if (subject.toLowerCase().includes('islam') || subject.toLowerCase().includes('agama')) {
+      setCoreTopic('Meneladani Nilai Akhlak Mulia dalam Kehidupan Nyata');
+      setTotalJp(54);
+    } else {
+      setCoreTopic(`Konsep Esensial dan Keterampilan Praktik ${subject}`);
       setTotalJp(54);
     }
   }, [subject]);
 
   if (!isOpen) return null;
 
-  // Available subjects
-  const subjectList = [
-    'Bahasa Indonesia',
-    'Matematika',
-    'Ilmu Pengetahuan Alam',
-    'Bahasa Inggris',
-    'Pendidikan Pancasila',
-  ];
+  // Retrieve combined CP database (system default + user custom CP)
+  let combinedCps: CapaianPembelajaran[] = CP_DATABASE;
+  try {
+    const stored = localStorage.getItem('custom_cp_database');
+    if (stored) {
+      combinedCps = JSON.parse(stored);
+    }
+  } catch (e) {
+    // fallback
+  }
 
-  // Subject-specific elements lookup
-  const currentSubjectCps = CP_DATABASE.filter((c) =>
+  const currentSubjectCps = combinedCps.filter((c) =>
     c.subject.toLowerCase().includes(subject.toLowerCase()) ||
     subject.toLowerCase().includes(c.subject.toLowerCase())
+  );
+
+  const recommendedElements = getRecommendedElements(subject);
+
+  // Dynamic set of all unique available elements
+  const allAvailableElementNames = Array.from(
+    new Set([
+      ...currentSubjectCps.map((c) => c.element),
+      ...recommendedElements,
+      ...customElementsList,
+      ...selectedElements,
+    ])
   );
 
   const toggleElement = (el: string) => {
@@ -102,6 +158,19 @@ export const CurriculumExpertModal: React.FC<CurriculumExpertModalProps> = ({
       }
     } else {
       setSelectedElements([...selectedElements, el]);
+    }
+  };
+
+  const handleAddCustomElement = () => {
+    const trimmed = newCustomElementInput.trim();
+    if (trimmed) {
+      if (!allAvailableElementNames.includes(trimmed)) {
+        setCustomElementsList((prev) => [...prev, trimmed]);
+      }
+      if (!selectedElements.includes(trimmed)) {
+        setSelectedElements((prev) => [...prev, trimmed]);
+      }
+      setNewCustomElementInput('');
     }
   };
 
@@ -302,20 +371,12 @@ export const CurriculumExpertModal: React.FC<CurriculumExpertModalProps> = ({
               {/* Grid 1: Subject, Grade, Semester */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="font-bold text-slate-800 block mb-1">
-                    Mata Pelajaran <span className="text-rose-500">*</span>
-                  </label>
-                  <select
+                  <SubjectPicker
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    className="w-full p-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#0051d5] focus:outline-none bg-white cursor-pointer font-semibold"
-                  >
-                    {subjectList.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(newSub) => setSubject(newSub)}
+                    label="Mata Pelajaran"
+                    required
+                  />
                 </div>
 
                 <div>
@@ -363,41 +424,71 @@ export const CurriculumExpertModal: React.FC<CurriculumExpertModalProps> = ({
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label className="font-bold text-slate-800">
-                    Elemen Capaian Pembelajaran (CP) Resmi <span className="text-rose-500">*</span>
+                    Elemen Capaian Pembelajaran (CP) Resmi & Kustom <span className="text-rose-500">*</span>
                   </label>
                   <span className="text-[11px] text-[#0051d5] font-semibold">
                     {selectedElements.length} Elemen terpilih
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200">
-                  {currentSubjectCps.map((cp) => {
-                    const isChecked = selectedElements.includes(cp.element);
-                    return (
-                      <label
-                        key={cp.id}
-                        className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
-                          isChecked
-                            ? 'bg-[#eff4ff] border-[#0051d5]'
-                            : 'border-slate-200 hover:bg-[#f8f9ff]'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={() => toggleElement(cp.element)}
-                          className="mt-0.5 text-[#0051d5] focus:ring-[#0051d5] accent-[#0051d5] rounded"
-                        />
-                        <div className="flex flex-col">
-                          <span className="font-bold text-slate-800 text-xs">
-                            {cp.element}
-                          </span>
-                          <span className="text-[11px] text-slate-500 line-clamp-1">
-                            {cp.deskripsi}
-                          </span>
-                        </div>
-                      </label>
-                    );
-                  })}
+                
+                <div className="p-2 bg-white rounded-xl border border-slate-200 space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto p-1">
+                    {allAvailableElementNames.map((elName) => {
+                      const isChecked = selectedElements.includes(elName);
+                      // Look up description if from CP database
+                      const matchedCp = currentSubjectCps.find((c) => c.element === elName);
+                      return (
+                        <label
+                          key={elName}
+                          className={`p-2.5 rounded-lg border cursor-pointer transition-all flex items-start gap-2.5 ${
+                            isChecked
+                              ? 'bg-[#eff4ff] border-[#0051d5]'
+                              : 'border-slate-200 hover:bg-[#f8f9ff]'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => toggleElement(elName)}
+                            className="mt-0.5 text-[#0051d5] focus:ring-[#0051d5] accent-[#0051d5] rounded"
+                          />
+                          <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 text-xs">
+                              {elName}
+                            </span>
+                            <span className="text-[11px] text-slate-500 line-clamp-1">
+                              {matchedCp?.deskripsi || `Elemen capaian untuk materi pokok ${subject}.`}
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div>
+
+                  {/* Add Custom Element Input */}
+                  <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                    <input
+                      type="text"
+                      value={newCustomElementInput}
+                      onChange={(e) => setNewCustomElementInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCustomElement();
+                        }
+                      }}
+                      placeholder="+ Ketik & tambah elemen CP sendiri..."
+                      className="flex-1 px-3 py-1.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#0051d5] focus:outline-none bg-[#f8f9ff]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCustomElement}
+                      className="px-3 py-1.5 rounded-lg bg-[#00236f] hover:bg-[#00174d] text-white text-xs font-bold shrink-0 transition-colors flex items-center gap-1 shadow-xs"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">add</span>
+                      <span>Tambah Elemen</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 

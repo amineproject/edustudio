@@ -5,7 +5,15 @@ import {
   saveSupabaseConfig,
   testSupabaseConnection,
   syncDocumentsToSupabase,
+  saveProfileToSupabase,
 } from '../lib/supabase';
+import {
+  getAllSubjects,
+  getCustomSubjects,
+  saveCustomSubject,
+  removeCustomSubject,
+  isUserCustomSubject,
+} from '../utils/subjectManager';
 
 interface PengaturanViewProps {
   profile: TeacherProfile;
@@ -22,6 +30,38 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
 }) => {
   const [formData, setFormData] = useState<TeacherProfile>(profile);
   const [saved, setSaved] = useState(false);
+  const [saveStatusDetail, setSaveStatusDetail] = useState('');
+
+  // Custom Subjects Management State
+  const [subjectsList, setSubjectsList] = useState<string[]>(getAllSubjects());
+  const [newSubjectName, setNewSubjectName] = useState('');
+  const [subjectToast, setSubjectToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setSubjectsList(getAllSubjects());
+    };
+    window.addEventListener('subjects_updated', handleUpdate);
+    return () => window.removeEventListener('subjects_updated', handleUpdate);
+  }, []);
+
+  const handleAddSubject = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = newSubjectName.trim();
+    if (!trimmed) return;
+    saveCustomSubject(trimmed);
+    setNewSubjectName('');
+    setSubjectToast(`Mata pelajaran "${trimmed}" berhasil ditambahkan ke sistem.`);
+    setTimeout(() => setSubjectToast(null), 3000);
+  };
+
+  const handleDeleteSubject = (name: string) => {
+    if (window.confirm(`Hapus mata pelajaran kustom "${name}" dari daftar?`)) {
+      removeCustomSubject(name);
+      setSubjectToast(`Mata pelajaran "${name}" telah dihapus.`);
+      setTimeout(() => setSubjectToast(null), 3000);
+    }
+  };
 
   // Supabase Configuration State
   const [supabaseUrl, setSupabaseUrl] = useState('');
@@ -41,17 +81,26 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
     }
   }, []);
 
-  const handleSubmitProfile = (e: React.FormEvent) => {
+  const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     onUpdateProfile(formData);
     setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+
+    // Save to Supabase and mirror to server storage for multi-device sync
+    const res = await saveProfileToSupabase(formData);
+    setSaveStatusDetail(res.message);
+    setTimeout(() => {
+      setSaved(false);
+      setSaveStatusDetail('');
+    }, 4000);
   };
 
-  const handleSaveSupabase = () => {
+  const handleSaveSupabase = async () => {
     saveSupabaseConfig({ url: supabaseUrl, anonKey: supabaseKey });
-    setConnMessage('URL dan Key Supabase berhasil disimpan.');
-    setTimeout(() => setConnMessage(''), 3000);
+    setConnMessage('Menyimpan konfigurasi dan menyinkronkan profil ke Supabase...');
+    const res = await saveProfileToSupabase(formData);
+    setConnMessage(res.message);
+    setTimeout(() => setConnMessage(''), 4500);
   };
 
   const handleTestConnection = async () => {
@@ -99,7 +148,12 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
       {saved && (
         <div className="p-3 sm:p-4 rounded-xl bg-green-50 text-green-800 border border-green-200 text-xs font-bold flex items-center gap-2 animate-in fade-in">
           <span className="material-symbols-outlined text-[16px] sm:text-[18px]">check_circle</span>
-          <span>Profil guru dan identitas sekolah berhasil diperbarui!</span>
+          <div>
+            <span>Profil guru dan identitas sekolah berhasil diperbarui!</span>
+            {saveStatusDetail && (
+              <p className="text-[11px] font-normal text-green-700 mt-0.5">{saveStatusDetail}</p>
+            )}
+          </div>
         </div>
       )}
 
@@ -186,6 +240,20 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
           </div>
 
           <div>
+            <label className="font-bold text-slate-800 block mb-1.5 flex items-center justify-between">
+              <span>NIP Kepala Sekolah</span>
+              <span className="text-[10px] text-[#0051d5] font-semibold">Lembar Pengesahan</span>
+            </label>
+            <input
+              type="text"
+              value={formData.headmasterNip || ''}
+              onChange={(e) => setFormData({ ...formData, headmasterNip: e.target.value })}
+              placeholder="Contoh: 19720315 199803 1 004"
+              className="w-full p-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#0051d5] focus:outline-none"
+            />
+          </div>
+
+          <div>
             <label className="font-bold text-slate-800 block mb-1.5">
               Tahun Ajaran Aktif
             </label>
@@ -224,7 +292,103 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
         </div>
       </form>
 
-      {/* SECTION 2: INTEGRASI CLOUD DATABASE (SUPABASE) */}
+      {/* SECTION 2: MANAJEMEN MATA PELAJARAN (KUSTOM & BSKAP) */}
+      <div className="bg-white p-4 sm:p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-[#e2e8f0] shadow-xs space-y-4 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#eff4ff] text-[#00236f] flex items-center justify-center font-bold shrink-0">
+              <span className="material-symbols-outlined text-[20px]">library_books</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xs sm:text-sm font-bold text-[#00236f] font-['Plus_Jakarta_Sans'] uppercase tracking-wider">
+                  2. Manajemen Mata Pelajaran (Bebas Tambah Sendiri)
+                </h2>
+                <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
+                  {subjectsList.length} Mapel Aktif
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Guru dapat mengisi sendiri atau menambahkan mata pelajaran baru (misalnya Muatan Lokal, Informatika, Prakarya spesifik, atau ekstrakurikuler).
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {subjectToast && (
+          <div className="p-3 rounded-xl bg-blue-50 text-blue-800 border border-blue-200 text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-[16px]">info</span>
+            <span>{subjectToast}</span>
+          </div>
+        )}
+
+        {/* Add New Subject Form */}
+        <form onSubmit={handleAddSubject} className="flex flex-col sm:flex-row gap-2.5">
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[18px]">
+              edit
+            </span>
+            <input
+              type="text"
+              value={newSubjectName}
+              onChange={(e) => setNewSubjectName(e.target.value)}
+              placeholder="Ketik mata pelajaran baru yang ingin ditambahkan (contoh: Bahasa Sunda, Robotika, IPS Terpadu)..."
+              className="w-full pl-9 pr-3 py-2.5 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-[#0051d5] focus:outline-none bg-white font-medium"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-5 py-2.5 rounded-lg bg-[#00236f] hover:bg-[#1e3a8a] text-white font-bold text-xs shadow-xs transition-colors shrink-0 flex items-center justify-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-[16px]">add_circle</span>
+            <span>+ Tambahkan Mapel</span>
+          </button>
+        </form>
+
+        {/* Subjects List Chips */}
+        <div>
+          <label className="font-bold text-slate-700 text-xs block mb-2">
+            Daftar Mata Pelajaran yang Tersedia di Seluruh Generator:
+          </label>
+          <div className="flex flex-wrap gap-2 max-h-60 overflow-y-auto p-1">
+            {subjectsList.map((subj) => {
+              const isCustom = isUserCustomSubject(subj);
+              return (
+                <div
+                  key={subj}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                    isCustom
+                      ? 'bg-amber-50/80 text-amber-900 border-amber-300 shadow-xs'
+                      : 'bg-slate-50 text-slate-800 border-slate-200'
+                  }`}
+                >
+                  <span className="material-symbols-outlined text-[14px] text-slate-400">
+                    {isCustom ? 'stars' : 'check_circle'}
+                  </span>
+                  <span>{subj}</span>
+                  {isCustom && (
+                    <span className="ml-1 px-1.5 py-0.2 bg-amber-200/80 text-amber-900 rounded-full text-[9px] font-bold">
+                      Kustom Anda
+                    </span>
+                  )}
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteSubject(subj)}
+                      className="ml-1 text-slate-400 hover:text-rose-600 transition-colors p-0.5 rounded"
+                      title="Hapus mapel ini"
+                    >
+                      <span className="material-symbols-outlined text-[14px]">close</span>
+                    </button>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* SECTION 3: INTEGRASI CLOUD DATABASE (SUPABASE) */}
       <div className="bg-white p-4 sm:p-6 sm:p-8 rounded-xl sm:rounded-2xl border border-[#e2e8f0] shadow-xs space-y-4 sm:space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2.5">
@@ -234,7 +398,7 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xs sm:text-sm font-bold text-[#00236f] font-['Plus_Jakarta_Sans'] uppercase tracking-wider">
-                  2. Koneksi Database Cloud Supabase
+                  3. Koneksi Database Cloud Supabase
                 </h2>
                 {connStatus === 'success' ? (
                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
