@@ -1,4 +1,5 @@
 // Utility for managing Kurikulum Merdeka SMP subjects (Standard BSKAP + User Custom Subjects)
+import { saveCustomSubjectToSupabase, deleteCustomSubjectFromSupabase } from '../lib/supabase';
 
 export const DEFAULT_SMP_SUBJECTS = [
   'Bahasa Indonesia',
@@ -65,6 +66,8 @@ export function saveCustomSubject(subjectName: string): boolean {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
       window.dispatchEvent(new CustomEvent('subjects_updated', { detail: updated }));
+      // Sync to Supabase Cloud
+      saveCustomSubjectToSupabase(trimmed).catch(() => {});
       // Sync to server background
       fetch('/api/sync', {
         method: 'POST',
@@ -87,6 +90,8 @@ export function removeCustomSubject(subjectName: string): boolean {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     window.dispatchEvent(new CustomEvent('subjects_updated', { detail: updated }));
+    // Delete from Supabase Cloud
+    deleteCustomSubjectFromSupabase(subjectName).catch(() => {});
     // Sync to server background
     fetch('/api/sync', {
       method: 'POST',

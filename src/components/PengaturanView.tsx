@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
 import { TeacherProfile, RecentDocument } from '../types';
 import {
   getSupabaseConfig,
@@ -20,6 +21,8 @@ interface PengaturanViewProps {
   onUpdateProfile: (p: TeacherProfile) => void;
   documents?: RecentDocument[];
   onOpenSqlModal?: () => void;
+  currentUser?: User | null;
+  onOpenAuth?: () => void;
 }
 
 export const PengaturanView: React.FC<PengaturanViewProps> = ({
@@ -27,6 +30,8 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
   onUpdateProfile,
   documents = [],
   onOpenSqlModal,
+  currentUser,
+  onOpenAuth,
 }) => {
   const [formData, setFormData] = useState<TeacherProfile>(profile);
   const [saved, setSaved] = useState(false);
@@ -83,16 +88,18 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
 
   const handleSubmitProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdateProfile(formData);
     setSaved(true);
+    setSaveStatusDetail('Menyimpan ke database cloud Supabase...');
 
-    // Save to Supabase and mirror to server storage for multi-device sync
+    // Save to Supabase (Single Source of Truth)
     const res = await saveProfileToSupabase(formData);
+    onUpdateProfile(formData);
     setSaveStatusDetail(res.message);
+
     setTimeout(() => {
       setSaved(false);
       setSaveStatusDetail('');
-    }, 4000);
+    }, 4500);
   };
 
   const handleSaveSupabase = async () => {
@@ -424,6 +431,49 @@ export const PengaturanView: React.FC<PengaturanViewProps> = ({
             >
               <span className="material-symbols-outlined text-[16px]">code</span>
               <span>Lihat Skema SQL Lengkap</span>
+            </button>
+          )}
+        </div>
+
+        {/* User Account & Device Sync Banner */}
+        <div className="p-4 rounded-xl bg-gradient-to-r from-[#eff4ff] to-white border border-[#dce9ff] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold shrink-0 ${
+              currentUser ? 'bg-emerald-500 text-white' : 'bg-[#00236f] text-white'
+            }`}>
+              <span className="material-symbols-outlined text-[20px]">
+                {currentUser ? 'verified_user' : 'account_circle'}
+              </span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-xs text-[#0b1c30]">
+                  {currentUser ? `Akun Cloud: ${currentUser.email}` : 'Sinkronisasi Akun Guru Multi-Perangkat'}
+                </span>
+                {currentUser && (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9.5px] font-bold">
+                    Aktif
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] text-[#444651] mt-0.5">
+                {currentUser
+                  ? 'Perangkat ini terhubung ke cloud Supabase. Perubahan dokumen & profil tersinkronkan seketika ke ponsel & laptop lain.'
+                  : 'Masuk dengan email yang sama di Laptop dan HP agar dokumen dan profil Anda tersinkronisasi otomatis.'}
+              </p>
+            </div>
+          </div>
+
+          {onOpenAuth && (
+            <button
+              type="button"
+              onClick={onOpenAuth}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#00236f] to-[#0051d5] hover:opacity-95 text-white font-bold text-xs shadow-xs transition-all shrink-0 flex items-center justify-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-[16px]">
+                {currentUser ? 'manage_accounts' : 'login'}
+              </span>
+              <span>{currentUser ? 'Kelola Akun Guru' : 'Masuk / Sinkronkan Akun'}</span>
             </button>
           )}
         </div>

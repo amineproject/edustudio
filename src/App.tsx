@@ -17,11 +17,16 @@ import { CurriculumChatbot } from './components/CurriculumChatbot';
 import { SupabaseSqlModal } from './components/SupabaseSqlModal';
 import { INITIAL_DOCUMENTS, INITIAL_TEACHER_PROFILE } from './data/kurikulumData';
 import { RecentDocument, TeacherProfile } from './types';
+import { User } from '@supabase/supabase-js';
+import { AuthModal } from './components/AuthModal';
 import {
   saveDocumentToSupabase,
   deleteDocumentFromSupabase,
   saveProfileToSupabase,
   syncAllDataAcrossDevices,
+  getCurrentUser,
+  onAuthStateChanged,
+  subscribeToRealtimeChanges,
 } from './lib/supabase';
 
 export default function App() {
@@ -47,6 +52,10 @@ export default function App() {
   const [isSyncingCloud, setIsSyncingCloud] = useState<boolean>(false);
   const [syncStatusText, setSyncStatusText] = useState<string>('');
 
+  // Authentication & Modal State
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+
   // Save changes to localStorage
   useEffect(() => {
     localStorage.setItem('edumerdeka_docs', JSON.stringify(documents));
@@ -56,16 +65,16 @@ export default function App() {
     localStorage.setItem('edumerdeka_profile', JSON.stringify(profile));
   }, [profile]);
 
-  // Automated Multi-Device Sync on App Mount
+  // Automated Multi-Device Sync on App Mount & Realtime updates
   // When opened on mobile or another device, automatically load shared profile & documents!
   const runCloudSync = useCallback(async (isSilent = false) => {
     if (!isSilent) setIsSyncingCloud(true);
     try {
       const result = await syncAllDataAcrossDevices(documents, profile);
-      if (result.syncedDocs && result.syncedDocs.length > 0) {
+      if (result && Array.isArray(result.syncedDocs)) {
         setDocuments(result.syncedDocs);
       }
-      if (result.syncedProfile && result.syncedProfile.name) {
+      if (result && result.syncedProfile && result.syncedProfile.name) {
         setProfile(result.syncedProfile);
       }
       if (!isSilent) {
@@ -83,9 +92,41 @@ export default function App() {
     }
   }, [documents, profile]);
 
+  // Initial Sync on load
   useEffect(() => {
     runCloudSync(false);
   }, []);
+
+  // Supabase Auth state listener
+  useEffect(() => {
+    getCurrentUser().then((user) => {
+      setCurrentUser(user);
+    });
+
+    const unsubscribe = onAuthStateChanged((user) => {
+      setCurrentUser(user);
+      if (user) {
+        // Trigger fresh sync on login
+        runCloudSync(false);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [runCloudSync]);
+
+  // Supabase Realtime multi-device subscription (Cross-Device Live Sync)
+  useEffect(() => {
+    const unsubscribe = subscribeToRealtimeChanges((table, eventType) => {
+      console.log(`[Realtime Sync] Perubahan pada tabel ${table} (${eventType}) terdeteksi dari perangkat lain.`);
+      runCloudSync(true);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [runCloudSync]);
 
   // Modal States
   const [isQuickDocOpen, setIsQuickDocOpen] = useState<boolean>(false);
@@ -166,7 +207,7 @@ export default function App() {
   };
 
   // Generate Document Handler
-  const handleGenerateDocument = (config: {
+  const handleGenerateDocument = async (config: {
     faseClass: string;
     subject: string;
     docType: string;
@@ -196,12 +237,23 @@ export default function App() {
     setIsQuickDocOpen(false);
     setActiveDoc(newDoc);
     setIsDocEditorOpen(true);
+
     // Persist immediately to cloud & server
-    saveDocumentToSupabase(newDoc, profile);
+    setIsSyncingCloud(true);
+    setSyncStatusText('Menyimpan ke Cloud Supabase...');
+    const res = await saveDocumentToSupabase(newDoc, profile);
+    setIsSyncingCloud(false);
+    if (res.success) {
+      setSyncStatusText('Tersimpan di Cloud Supabase!');
+      setTimeout(() => setSyncStatusText(''), 3000);
+    } else {
+      setSyncStatusText(`Perhatian simpan cloud: ${res.message}`);
+      setTimeout(() => setSyncStatusText(''), 4000);
+    }
   };
 
   // Save Document changes (handles both existing document updates and new document insertions)
-  const handleSaveDocument = (updatedDoc: RecentDocument) => {
+  const handleSaveDocument = async (updatedDoc: RecentDocument) => {
     setDocuments((prev) => {
       const exists = prev.some((d) => d.id === updatedDoc.id);
       return exists
@@ -209,22 +261,53 @@ export default function App() {
         : [updatedDoc, ...prev];
     });
     setActiveDoc(updatedDoc);
-    // Persist immediately to cloud & server
-    saveDocumentToSupabase(updatedDoc, profile);
-  };
 
-  // Delete Document
-  const handleDeleteDocument = (id: string) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus arsip dokumen ini?')) {
-      setDocuments((prev) => prev.filter((d) => d.id !== id));
-      // Delete immediately from cloud & server
-      deleteDocumentFromSupabase(id);
+    // Persist immediately to cloud & server
+    setIsSyncingCloud(true);
+    setSyncStatusText('Menyimpan ke Cloud Supabase...');
+    const res = await saveDocumentToSupabase(updatedDoc, profile);
+    setIsSyncingCloud(false);
+    if (res.success) {
+      setSyncStatusText('Tersimpan di Cloud Supabase!');
+      setTimeout(() => setSyncStatusText(''), 3000);
+    } else {
+      setSyncStatusText(`Gagal simpan cloud: ${res.message}`);
+      setTimeout(() => setSyncStatusText(''), 4000);
     }
   };
 
-  const handleUpdateProfile = (newProfile: TeacherProfile) => {
+  // Delete Document
+  const handleDeleteDocument = async (id: string) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus arsip dokumen ini?')) {
+      setDocuments((prev) => prev.filter((d) => d.id !== id));
+      // Delete immediately from cloud & server
+      setIsSyncingCloud(true);
+      setSyncStatusText('Menghapus dari Cloud Supabase...');
+      const res = await deleteDocumentFromSupabase(id);
+      setIsSyncingCloud(false);
+      if (res.success) {
+        setSyncStatusText('Berhasil dihapus dari cloud!');
+        setTimeout(() => setSyncStatusText(''), 3000);
+      } else {
+        setSyncStatusText(`Gagal hapus cloud: ${res.message}`);
+        setTimeout(() => setSyncStatusText(''), 4000);
+      }
+    }
+  };
+
+  const handleUpdateProfile = async (newProfile: TeacherProfile) => {
     setProfile(newProfile);
-    saveProfileToSupabase(newProfile);
+    setIsSyncingCloud(true);
+    setSyncStatusText('Menyimpan profil ke Cloud Supabase...');
+    const res = await saveProfileToSupabase(newProfile);
+    setIsSyncingCloud(false);
+    if (res.success) {
+      setSyncStatusText('Profil tersimpan di Cloud Supabase!');
+      setTimeout(() => setSyncStatusText(''), 3000);
+    } else {
+      setSyncStatusText(`Gagal simpan profil: ${res.message}`);
+      setTimeout(() => setSyncStatusText(''), 4000);
+    }
   };
 
   return (
@@ -252,6 +335,8 @@ export default function App() {
           isSyncing={isSyncingCloud}
           onManualSync={() => runCloudSync(false)}
           syncStatusText={syncStatusText}
+          currentUser={currentUser}
+          onOpenAuth={() => setIsAuthModalOpen(true)}
         />
 
         {/* Dynamic Route Content */}
@@ -315,6 +400,8 @@ export default function App() {
               onUpdateProfile={handleUpdateProfile}
               documents={documents}
               onOpenSqlModal={() => setIsSqlModalOpen(true)}
+              currentUser={currentUser}
+              onOpenAuth={() => setIsAuthModalOpen(true)}
             />
           )}
         </main>
@@ -408,6 +495,13 @@ export default function App() {
       <SupabaseSqlModal
         isOpen={isSqlModalOpen}
         onClose={() => setIsSqlModalOpen(false)}
+      />
+
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        currentUser={currentUser}
+        onAuthSuccess={() => runCloudSync(false)}
       />
     </div>
   );

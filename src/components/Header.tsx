@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { User } from '@supabase/supabase-js';
 import { TeacherProfile } from '../types';
 
 interface HeaderProps {
@@ -11,6 +12,8 @@ interface HeaderProps {
   isSyncing?: boolean;
   onManualSync?: () => void;
   syncStatusText?: string;
+  currentUser?: User | null;
+  onOpenAuth?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -23,6 +26,8 @@ export const Header: React.FC<HeaderProps> = ({
   isSyncing = false,
   onManualSync,
   syncStatusText,
+  currentUser,
+  onOpenAuth,
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(2);
@@ -104,6 +109,27 @@ export const Header: React.FC<HeaderProps> = ({
               <span className="material-symbols-outlined text-[16px] sm:text-[17px]">psychology</span>
               <span className="hidden sm:inline">Tanya Pakar AI</span>
               <span className="sm:hidden">Pakar AI</span>
+            </button>
+          )}
+
+          {/* User Auth & Device Sync Button */}
+          {onOpenAuth && (
+            <button
+              onClick={onOpenAuth}
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                currentUser
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+                  : 'bg-[#eff4ff] text-[#00236f] border border-[#dce9ff] hover:bg-[#dce9ff]'
+              }`}
+              title={currentUser ? `Akun Cloud: ${currentUser.email} (Tersinkron)` : 'Masuk / Sinkronkan Akun Antar Perangkat'}
+              type="button"
+            >
+              <span className={`material-symbols-outlined text-[17px] ${currentUser ? 'text-emerald-600' : 'text-[#0051d5]'}`}>
+                {currentUser ? 'verified_user' : 'account_circle'}
+              </span>
+              <span className="hidden md:inline max-w-[130px] truncate text-[11px]">
+                {currentUser ? currentUser.email?.split('@')[0] : 'Akun Cloud'}
+              </span>
             </button>
           )}
 

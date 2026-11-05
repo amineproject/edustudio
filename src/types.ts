@@ -47,4 +47,6 @@ export interface TeacherProfile {
   headmasterNip: string;
   academicYear: string;
   semester: string;
+  email?: string;
+  userId?: string;
 }
