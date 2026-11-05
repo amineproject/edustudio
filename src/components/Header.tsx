@@ -199,7 +199,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                   <div className="p-2.5 bg-[#f8fafe] border-t border-[#e2e8f0] text-center">
                     <span className="text-[11px] text-slate-500 font-medium">
-                      Pusat Informasi Kurikulum Merdeka Terintegrasi
+                      EduStudio • Pusat Informasi Kurikulum Merdeka SMP
                     </span>
                   </div>
                 </div>

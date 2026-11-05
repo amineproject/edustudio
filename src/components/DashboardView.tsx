@@ -18,6 +18,121 @@ interface DashboardViewProps {
   searchQuery: string;
 }
 
+const MODULE_DETAILS_EXTRA: Record<
+  string,
+  {
+    outputs: string[];
+    tips: string;
+    kategoriLabel: string;
+    badgeColor: string;
+  }
+> = {
+  cp: {
+    outputs: [
+      'Analisis dan dekonstruksi Capaian Pembelajaran (CP) per elemen Fase D',
+      'Pemetaan konten materi esensial dan prasyarat antar-jenjang kelas 7, 8, dan 9',
+      'Penyesuaian teks resmi regulasi BSKAP 033/H/KR/2024 dan revisinya',
+    ],
+    tips: 'Jadikan CP sebagai fondasi utama sebelum merumuskan Tujuan Pembelajaran (TP).',
+    kategoriLabel: 'Perencanaan Awal',
+    badgeColor: 'bg-blue-100 text-[#00236f]',
+  },
+  tp: {
+    outputs: [
+      'Perumusan Tujuan Pembelajaran (TP) berbasis Taksonomi Bloom Revisi (C1–C6)',
+      'Struktur TP terukur: Kompetensi (Kata Kerja Operasional) + Konten (Materi)',
+      'Integrasi 6 Dimensi Profil Pelajar Pancasila (PPP) yang relevan',
+    ],
+    tips: 'Gunakan KKO yang dapat diobservasi dan diukur (hindari kata "memahami" atau "mengetahui").',
+    kategoriLabel: 'Perumusan KKO',
+    badgeColor: 'bg-indigo-100 text-indigo-800',
+  },
+  atp: {
+    outputs: [
+      'Alur Tujuan Pembelajaran (ATP) sekuensial dan berkesinambungan Fase D',
+      'Prinsip pengurutan logis: konkret → abstrak, mudah → kompleks, prasyarat → lanjutan',
+      'Distribusi alokasi Jam Pelajaran (JP) presisi sesuai pekan efektif semester',
+      'Rekomendasi asesmen awal, formatif, dan sumatif per tahapan TP',
+    ],
+    tips: 'Pastikan total akumulasi JP pada alur tidak melampaui alokasi jam efektif semester.',
+    kategoriLabel: 'Alur Hierarkis',
+    badgeColor: 'bg-cyan-100 text-cyan-900',
+  },
+  prota: {
+    outputs: [
+      'Distribusi alokasi JP tahunan untuk Semester Ganjil dan Genap',
+      'Penyesuaian dengan kalender pendidikan dan jumlah pekan efektif sekolah',
+      'Lembar Pengesahan resmi kepala sekolah dan guru mata pelajaran',
+    ],
+    tips: 'Dihitung otomatis dari alokasi JP per TP yang telah dirancang di ATP.',
+    kategoriLabel: 'Program Tahunan',
+    badgeColor: 'bg-amber-100 text-amber-900',
+  },
+  promes: {
+    outputs: [
+      'Matriks distribusi materi dan alokasi JP per bulan dan pekan efektif',
+      'Penjadwalan Asesmen Sumatif Lingkup Materi dan Sumatif Akhir Semester',
+      'Antisipasi pekan cadangan untuk penguatan kompetensi murid',
+    ],
+    tips: 'Membantu guru menyusun agenda mengajar harian tanpa tumpang-tindih kegiatan sekolah.',
+    kategoriLabel: 'Program Semester',
+    badgeColor: 'bg-emerald-100 text-emerald-900',
+  },
+  modul_ajar: {
+    outputs: [
+      'Modul Ajar Deep Learning kerangka 8-3-3-4 (8 Dimensi, 3 Pilar, 4 Kerangka)',
+      'Skenario 3 Pengalaman Belajar: Memahami, Mengaplikasikan, dan Merefleksikan',
+      'Diferensiasi proses, konten, dan produk sesuai kesiapan belajar murid',
+      'Lembar Kerja Peserta Didik (LKPD) terstruktur dan rubrik asesmen lengkap',
+      'Tanda tangan pengesahan dengan NIP Guru & NIP Kepala Sekolah',
+    ],
+    tips: 'Dokumen utama operasional mengajar kelas. Siap cetak (Print/PDF) atau ekspor DOCX.',
+    kategoriLabel: 'Perangkat Utama',
+    badgeColor: 'bg-blue-600 text-white',
+  },
+  bahan_ajar: {
+    outputs: [
+      'Ringkasan materi konseptual yang ramah dibaca peserta didik SMP',
+      'Peta konsep visual dan ringkasan pemahaman bermakna',
+      'Glosarium istilah penting dan rangkuman intisari bab',
+    ],
+    tips: 'Dapat dibagikan kepada peserta didik sebagai modul bacaan mandiri atau bahan diskusi.',
+    kategoriLabel: 'Bahan Ajar Siswa',
+    badgeColor: 'bg-purple-100 text-purple-900',
+  },
+  lkpd: {
+    outputs: [
+      'Lembar Aktivitas Siswa berbasis masalah kontekstual (PBL/PjBL)',
+      'Petunjuk kerja kelompok kolaboratif dan investigasi mandiri',
+      'Rubrik penilaian diri (self-assessment) dan refleksi belajar murid',
+    ],
+    tips: 'Berikan stimulus nyata dari lingkungan sekitar atau kearifan lokal agar lebih bermakna.',
+    kategoriLabel: 'Lembar Aktivitas',
+    badgeColor: 'bg-teal-100 text-teal-900',
+  },
+  media: {
+    outputs: [
+      'Rancangan storyboard / kerangka slide interaktif presentasi kelas',
+      'Panduan pembuatan alat peraga ramah lingkungan dan hemat biaya',
+      'Rekomendasi simulasi digital dan media visual pendukung konsep',
+    ],
+    tips: 'Membantu visualisasi materi abstrak menjadi nyata dan menggembirakan.',
+    kategoriLabel: 'Media & Peraga',
+    badgeColor: 'bg-orange-100 text-orange-900',
+  },
+  asesmen: {
+    outputs: [
+      'Instrumen asesmen lengkap: Diagnostik Awal, Formatif, dan Sumatif',
+      'Kisi-kisi soal penalaran tingkat tinggi (HOTS) beserta stimulus',
+      'Rubrik penilaian analitik dan panduan interval KKTP Kurikulum Merdeka',
+      'Rencana program remedial dan pengayaan yang terarah',
+    ],
+    tips: 'Fokus pada umpan balik formatif berkelanjutan, bukan sekadar nilai angka semata.',
+    kategoriLabel: 'Instrumen Evaluasi',
+    badgeColor: 'bg-rose-100 text-rose-900',
+  },
+};
+
 export const DashboardView: React.FC<DashboardViewProps> = ({
   documents,
   activeSubject,
@@ -33,6 +148,25 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   searchQuery,
 }) => {
   const [activeTab, setActiveTab] = useState<ModuleCategory>('all');
+  const [selectedDetailModule, setSelectedDetailModule] = useState<ModuleItem | null>(null);
+  const [catalogViewMode, setCatalogViewMode] = useState<'compact' | 'cards'>('compact');
+
+  const handleLaunchModule = (item: ModuleItem) => {
+    setSelectedDetailModule(null);
+    if (item.id === 'cp') {
+      onOpenCurriculumExpert(activeSubject, 'cp_analysis');
+    } else if (item.id === 'tp') {
+      onOpenCurriculumExpert(activeSubject, 'tp_formulation');
+    } else if (item.id === 'atp') {
+      onOpenCurriculumExpert(activeSubject, 'atp_flow');
+    } else if (item.id === 'modul_ajar' && onOpenDeepLearningModul) {
+      onOpenDeepLearningModul(activeSubject);
+    } else if (item.id === 'asesmen' && onOpenAssessmentModal) {
+      onOpenAssessmentModal(activeSubject);
+    } else {
+      onOpenQuickDocModal(item.title, activeSubject);
+    }
+  };
 
   const filteredModules = MODULES_LIST.filter((mod) => {
     const matchCategory = activeTab === 'all' || mod.category === activeTab;
@@ -77,7 +211,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Headline */}
             <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-[#0b1c30] tracking-tight font-['Plus_Jakarta_Sans'] leading-tight">
-              Selamat Datang, Guru Hebat! 👋
+              Selamat Datang di EduStudio! 👋
             </h1>
 
             {/* Description */}
@@ -318,183 +452,283 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </h2>
             </div>
             <p className="text-[11px] sm:text-xs text-[#444651] mt-0.5">
-              Pilih komponen perangkat ajar yang ingin Anda susun secara sistematis dan terstandar:
+              Pilih modul untuk melihat keterangan lengkap dan membuka generator dokumen:
             </p>
           </div>
 
-          {/* Filter Tabs - Horizontal Swipe on Mobile */}
-          <div className="flex items-center bg-[#eff4ff] p-1 rounded-xl self-start md:self-auto overflow-x-auto max-w-full border border-[#dce9ff] gap-1">
-            <button
-              onClick={() => setActiveTab('all')}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
-                activeTab === 'all'
-                  ? 'bg-white text-[#00236f] shadow-xs font-bold'
-                  : 'text-[#444651] hover:text-[#0b1c30]'
-              }`}
-              type="button"
-            >
-              Semua (10)
-            </button>
-            <button
-              onClick={() => setActiveTab('perencanaan')}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
-                activeTab === 'perencanaan'
-                  ? 'bg-white text-[#00236f] shadow-xs font-bold'
-                  : 'text-[#444651] hover:text-[#0b1c30]'
-              }`}
-              type="button"
-            >
-              Perencanaan (5)
-            </button>
-            <button
-              onClick={() => setActiveTab('bahan')}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
-                activeTab === 'bahan'
-                  ? 'bg-white text-[#00236f] shadow-xs font-bold'
-                  : 'text-[#444651] hover:text-[#0b1c30]'
-              }`}
-              type="button"
-            >
-              Bahan & Media (3)
-            </button>
-            <button
-              onClick={() => setActiveTab('evaluasi')}
-              className={`px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
-                activeTab === 'evaluasi'
-                  ? 'bg-white text-[#00236f] shadow-xs font-bold'
-                  : 'text-[#444651] hover:text-[#0b1c30]'
-              }`}
-              type="button"
-            >
-              Evaluasi (2)
-            </button>
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Filter Tabs - Horizontal Swipe on Mobile */}
+            <div className="flex items-center bg-[#eff4ff] p-1 rounded-xl self-start md:self-auto overflow-x-auto max-w-full border border-[#dce9ff] gap-1">
+              <button
+                onClick={() => setActiveTab('all')}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
+                  activeTab === 'all'
+                    ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                    : 'text-[#444651] hover:text-[#0b1c30]'
+                }`}
+                type="button"
+              >
+                Semua (10)
+              </button>
+              <button
+                onClick={() => setActiveTab('perencanaan')}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
+                  activeTab === 'perencanaan'
+                    ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                    : 'text-[#444651] hover:text-[#0b1c30]'
+                }`}
+                type="button"
+              >
+                Perencanaan (5)
+              </button>
+              <button
+                onClick={() => setActiveTab('bahan')}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
+                  activeTab === 'bahan'
+                    ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                    : 'text-[#444651] hover:text-[#0b1c30]'
+                }`}
+                type="button"
+              >
+                Bahan & Media (3)
+              </button>
+              <button
+                onClick={() => setActiveTab('evaluasi')}
+                className={`px-2.5 sm:px-3 py-1 rounded-lg text-[11px] sm:text-xs transition-all whitespace-nowrap font-medium ${
+                  activeTab === 'evaluasi'
+                    ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                    : 'text-[#444651] hover:text-[#0b1c30]'
+                }`}
+                type="button"
+              >
+                Evaluasi (2)
+              </button>
+            </div>
+
+            {/* View Mode Toggle: Ringkas (Nama Saja) vs Kartu Lengkap */}
+            <div className="hidden sm:inline-flex items-center bg-[#eff4ff] p-1 rounded-xl border border-[#dce9ff] text-xs">
+              <button
+                onClick={() => setCatalogViewMode('compact')}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  catalogViewMode === 'compact'
+                    ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                    : 'text-[#444651] hover:text-[#0b1c30]'
+                }`}
+                title="Tampilkan Nama Saja (Ringkas)"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[15px]">grid_view</span>
+                <span>Nama Saja</span>
+              </button>
+              <button
+                onClick={() => setCatalogViewMode('cards')}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                  catalogViewMode === 'cards'
+                    ? 'bg-white text-[#00236f] shadow-xs font-bold'
+                    : 'text-[#444651] hover:text-[#0b1c30]'
+                }`}
+                title="Tampilan Kartu Lengkap"
+                type="button"
+              >
+                <span className="material-symbols-outlined text-[15px]">view_agenda</span>
+                <span>Lengkap</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 10 Modular Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5" id="moduleGrid">
-          {filteredModules.map((item) => {
-            const isFeatured = item.isPopular;
+        {/* View Mode: Compact (Nama Saja dengan Indikator Keterangan Popup) */}
+        {catalogViewMode === 'compact' ? (
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3.5" id="moduleGrid">
+            {filteredModules.map((item) => {
+              const isFeatured = item.isPopular;
 
-            return (
-              <div
-                key={item.id}
-                className={`group bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl border transition-all flex flex-col justify-between relative overflow-hidden ${
-                  isFeatured
-                    ? 'border-[#316bf3]/40 shadow-xs hover:shadow-lg'
-                    : 'border-[#e2e8f0] shadow-xs hover:shadow-md'
-                }`}
-              >
-                {isFeatured && (
-                  <div className="absolute -right-12 -top-12 w-28 h-28 bg-[#316bf3]/10 rounded-full blur-xl pointer-events-none"></div>
-                )}
-
-                <div>
-                  {/* Card Header Badges */}
-                  <div className="flex items-center justify-between mb-2.5 sm:mb-3.5">
-                    <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold ${
-                        isFeatured
-                          ? 'bg-[#0051d5] text-white shadow-xs'
-                          : 'bg-[#dce9ff] text-[#00236f]'
-                      }`}
-                    >
-                      {item.tag1}
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setSelectedDetailModule(item)}
+                  className={`group relative text-left bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border transition-all duration-200 flex flex-col justify-between hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 cursor-pointer ${
+                    isFeatured
+                      ? 'border-[#0051d5]/40 hover:border-[#0051d5] ring-1 ring-[#0051d5]/20 bg-gradient-to-b from-blue-50/20 to-white'
+                      : 'border-[#e2e8f0] hover:border-[#0051d5]/40'
+                  }`}
+                >
+                  {/* Top Badge: Number + Category */}
+                  <div className="flex items-center justify-between w-full mb-2.5">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-[#eff4ff] text-[#00236f] text-[10.5px] font-extrabold group-hover:bg-[#00236f] group-hover:text-white transition-colors">
+                      {String(item.number).padStart(2, '0')}
                     </span>
                     <span
-                      className={`inline-flex items-center text-[10px] px-1.5 py-0.5 rounded ${
+                      className={`inline-flex items-center gap-0.5 text-[9.5px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                         isFeatured
-                          ? 'text-[#00236f] bg-[#dce9ff] font-bold'
-                          : 'text-[#444651] bg-[#eff4ff]'
+                          ? 'bg-amber-100 text-amber-900'
+                          : 'bg-slate-100 text-[#444651]'
                       }`}
                     >
-                      {item.tag2}
+                      {isFeatured && <span className="material-symbols-outlined text-[11px]">star</span>}
+                      {item.category === 'perencanaan'
+                        ? 'Rencana'
+                        : item.category === 'bahan'
+                        ? 'Bahan'
+                        : 'Evaluasi'}
                     </span>
                   </div>
 
-                  {/* Icon & Title */}
-                  <div className="flex items-start gap-2.5 sm:gap-3 mb-2 sm:mb-2.5">
+                  {/* Icon & Title (Nama Saja) */}
+                  <div className="flex flex-col gap-2 w-full">
                     <div
-                      className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 transition-all ${
                         isFeatured
-                          ? 'bg-[#00236f] text-white shadow-xs'
+                          ? 'bg-gradient-to-tr from-[#00236f] to-[#0051d5] text-white shadow-xs'
                           : 'bg-[#eff4ff] text-[#0051d5] group-hover:bg-[#00236f] group-hover:text-white'
                       }`}
                     >
-                      <span className="material-symbols-outlined text-[20px] sm:text-[24px]">
+                      <span className="material-symbols-outlined text-[20px] sm:text-[22px]">
                         {item.icon}
                       </span>
                     </div>
-                    <div className="flex flex-col">
-                      <h3
-                        className={`text-sm sm:text-base font-bold font-['Plus_Jakarta_Sans'] leading-tight transition-colors ${
-                          isFeatured
-                            ? 'text-[#00236f]'
-                            : 'text-[#0b1c30] group-hover:text-[#00236f]'
-                        }`}
-                      >
+
+                    {/* Name Title */}
+                    <div className="min-h-[38px] flex flex-col justify-center">
+                      <h3 className="text-xs sm:text-[13px] font-bold text-[#0b1c30] group-hover:text-[#00236f] leading-snug line-clamp-2 font-['Plus_Jakarta_Sans'] transition-colors">
                         {item.title}
                       </h3>
-                      <span className="text-[10.5px] sm:text-[11px] text-[#444651] mt-0.5">
-                        {item.subtitle}
-                      </span>
                     </div>
                   </div>
 
-                  {/* Description */}
-                  <p className="text-[11.5px] sm:text-xs text-[#444651] leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4">
-                    {item.description}
-                  </p>
-                </div>
-
-                {/* Card Footer Actions */}
-                <div className="pt-2.5 sm:pt-3 border-t border-[#f1f5f9] flex items-center justify-between">
-                  <span
-                    className={`text-[10.5px] sm:text-[11px] flex items-center gap-1 ${
-                      isFeatured
-                        ? 'text-[#0051d5] font-bold'
-                        : 'text-[#444651]'
-                    }`}
-                  >
-                    <span className="material-symbols-outlined text-[14px] sm:text-[15px]">
-                      {item.footerIcon}
+                  {/* Bottom Click Hint */}
+                  <div className="mt-2.5 pt-2 border-t border-[#f1f5f9] flex items-center justify-between w-full text-[10.5px] text-[#0051d5] font-semibold">
+                    <span className="flex items-center gap-1 group-hover:underline">
+                      <span className="material-symbols-outlined text-[13px]">info</span>
+                      <span>Keterangan</span>
                     </span>
-                    <span className="truncate max-w-[120px] sm:max-w-none">{item.footerTag}</span>
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (item.id === 'cp') {
-                        onOpenCurriculumExpert(activeSubject, 'cp_analysis');
-                      } else if (item.id === 'tp') {
-                        onOpenCurriculumExpert(activeSubject, 'tp_formulation');
-                      } else if (item.id === 'atp') {
-                        onOpenCurriculumExpert(activeSubject, 'atp_flow');
-                      } else if (item.id === 'modul_ajar' && onOpenDeepLearningModul) {
-                        onOpenDeepLearningModul(activeSubject);
-                      } else if (item.id === 'asesmen' && onOpenAssessmentModal) {
-                        onOpenAssessmentModal(activeSubject);
-                      } else {
-                        onOpenQuickDocModal(item.title, activeSubject);
-                      }
-                    }}
-                    className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold transition-all ${
-                      isFeatured
-                        ? 'bg-[#00236f] text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-[#1e3a8a] shadow-xs'
-                        : 'text-[#0051d5] group-hover:text-[#00236f] group-hover:translate-x-0.5'
-                    }`}
-                  >
-                    <span>{item.actionText}</span>
-                    <span className="material-symbols-outlined text-[15px] sm:text-[16px]">
+                    <span className="material-symbols-outlined text-[15px] opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all">
                       arrow_forward
                     </span>
-                  </button>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          /* View Mode: Cards (Tampilan Kartu Lengkap) */
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3.5 sm:gap-5" id="moduleGrid">
+            {filteredModules.map((item) => {
+              const isFeatured = item.isPopular;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`group bg-white p-4 sm:p-5 rounded-xl sm:rounded-2xl border transition-all flex flex-col justify-between relative overflow-hidden ${
+                    isFeatured
+                      ? 'border-[#316bf3]/40 shadow-xs hover:shadow-lg'
+                      : 'border-[#e2e8f0] shadow-xs hover:shadow-md'
+                  }`}
+                >
+                  {isFeatured && (
+                    <div className="absolute -right-12 -top-12 w-28 h-28 bg-[#316bf3]/10 rounded-full blur-xl pointer-events-none"></div>
+                  )}
+
+                  <div>
+                    {/* Card Header Badges */}
+                    <div className="flex items-center justify-between mb-2.5 sm:mb-3.5">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold ${
+                          isFeatured
+                            ? 'bg-[#0051d5] text-white shadow-xs'
+                            : 'bg-[#dce9ff] text-[#00236f]'
+                        }`}
+                      >
+                        {item.tag1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDetailModule(item)}
+                        className="inline-flex items-center gap-1 text-[10.5px] text-[#0051d5] hover:text-[#00236f] font-semibold"
+                        title="Lihat Keterangan Detail"
+                      >
+                        <span className="material-symbols-outlined text-[14px]">info</span>
+                        <span>Keterangan</span>
+                      </button>
+                    </div>
+
+                    {/* Icon & Title */}
+                    <div
+                      className="flex items-start gap-2.5 sm:gap-3 mb-2 sm:mb-2.5 cursor-pointer"
+                      onClick={() => setSelectedDetailModule(item)}
+                    >
+                      <div
+                        className={`w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                          isFeatured
+                            ? 'bg-[#00236f] text-white shadow-xs'
+                            : 'bg-[#eff4ff] text-[#0051d5] group-hover:bg-[#00236f] group-hover:text-white'
+                        }`}
+                      >
+                        <span className="material-symbols-outlined text-[20px] sm:text-[24px]">
+                          {item.icon}
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        <h3
+                          className={`text-sm sm:text-base font-bold font-['Plus_Jakarta_Sans'] leading-tight transition-colors ${
+                            isFeatured
+                              ? 'text-[#00236f]'
+                              : 'text-[#0b1c30] group-hover:text-[#00236f]'
+                          }`}
+                        >
+                          {item.title}
+                        </h3>
+                        <span className="text-[10.5px] sm:text-[11px] text-[#444651] mt-0.5">
+                          {item.subtitle}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <p
+                      className="text-[11.5px] sm:text-xs text-[#444651] leading-relaxed line-clamp-2 sm:line-clamp-3 mb-3 sm:mb-4 cursor-pointer"
+                      onClick={() => setSelectedDetailModule(item)}
+                    >
+                      {item.description}
+                    </p>
+                  </div>
+
+                  {/* Card Footer Actions */}
+                  <div className="pt-2.5 sm:pt-3 border-t border-[#f1f5f9] flex items-center justify-between">
+                    <span
+                      className={`text-[10.5px] sm:text-[11px] flex items-center gap-1 ${
+                        isFeatured
+                          ? 'text-[#0051d5] font-bold'
+                          : 'text-[#444651]'
+                      }`}
+                    >
+                      <span className="material-symbols-outlined text-[14px] sm:text-[15px]">
+                        {item.footerIcon}
+                      </span>
+                      <span className="truncate max-w-[120px] sm:max-w-none">{item.footerTag}</span>
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => handleLaunchModule(item)}
+                      className={`inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold transition-all ${
+                        isFeatured
+                          ? 'bg-[#00236f] text-white px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-[#1e3a8a] shadow-xs'
+                          : 'text-[#0051d5] group-hover:text-[#00236f] group-hover:translate-x-0.5'
+                      }`}
+                    >
+                      <span>{item.actionText}</span>
+                      <span className="material-symbols-outlined text-[15px] sm:text-[16px]">
+                        arrow_forward
+                      </span>
+                    </button>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Dokumen Terbaru / Workflow Continuity Section */}
@@ -680,6 +914,162 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </table>
         </div>
       </section>
+
+      {/* Modal Popup Keterangan Modul Generator */}
+      {selectedDetailModule && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150"
+          onClick={() => setSelectedDetailModule(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg sm:max-w-xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 bg-gradient-to-r from-[#eff4ff] to-white border-b border-[#e2e8f0] flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-tr from-[#00236f] to-[#0051d5] text-white flex items-center justify-center shadow-sm shrink-0">
+                  <span className="material-symbols-outlined text-[24px] sm:text-[26px]">
+                    {selectedDetailModule.icon}
+                  </span>
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-[#00236f] text-white font-extrabold text-[10px]">
+                      Modul #{String(selectedDetailModule.number).padStart(2, '0')}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-[#dce9ff] text-[#00236f] font-semibold text-[10px]">
+                      {selectedDetailModule.category === 'perencanaan'
+                        ? 'Perencanaan'
+                        : selectedDetailModule.category === 'bahan'
+                        ? 'Bahan & Media'
+                        : 'Evaluasi & Asesmen'}
+                    </span>
+                    {selectedDetailModule.isPopular && (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold text-[10px] flex items-center gap-0.5">
+                        <span className="material-symbols-outlined text-[12px]">star</span>
+                        Populer
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-base sm:text-lg font-bold text-[#0b1c30] font-['Plus_Jakarta_Sans'] mt-1 leading-snug">
+                    {selectedDetailModule.title}
+                  </h3>
+                  <p className="text-xs text-[#444651] mt-0.5">
+                    {selectedDetailModule.subtitle}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setSelectedDetailModule(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                aria-label="Tutup Keterangan"
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-3.5 text-xs">
+              {/* Deskripsi Lengkap */}
+              <div>
+                <h4 className="text-[11px] font-bold text-[#444651] uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px] text-[#0051d5]">description</span>
+                  Keterangan & Fungsi
+                </h4>
+                <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed bg-[#f8f9ff] p-3.5 rounded-xl border border-[#e5eeff]">
+                  {selectedDetailModule.description}
+                </p>
+              </div>
+
+              {/* Tag & Karakteristik */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#eff4ff] text-[#00236f] text-xs font-semibold border border-[#dce9ff]">
+                  <span className="material-symbols-outlined text-[14px]">verified</span>
+                  {selectedDetailModule.tag1}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#eff4ff] text-[#444651] text-xs font-semibold border border-[#dce9ff]">
+                  <span className="material-symbols-outlined text-[14px]">category</span>
+                  {selectedDetailModule.tag2}
+                </span>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200">
+                  <span className="material-symbols-outlined text-[14px] text-emerald-600">
+                    {selectedDetailModule.footerIcon}
+                  </span>
+                  {selectedDetailModule.footerTag}
+                </span>
+              </div>
+
+              {/* Komponen & Output Dokumen */}
+              {MODULE_DETAILS_EXTRA[selectedDetailModule.id] && (
+                <div className="space-y-2 pt-1">
+                  <h4 className="text-[11px] font-bold text-[#444651] uppercase tracking-wider flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px] text-emerald-600">task_alt</span>
+                    Dokumen & Output yang Dihasilkan
+                  </h4>
+                  <ul className="space-y-1.5 bg-white p-3 rounded-xl border border-slate-200">
+                    {MODULE_DETAILS_EXTRA[selectedDetailModule.id].outputs.map((out, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-slate-700 text-xs leading-normal">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#0051d5] mt-1.5 shrink-0"></span>
+                        <span>{out}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Tips Edukasi Guru */}
+                  <div className="p-3 bg-amber-50/80 rounded-xl border border-amber-200/80 text-amber-900 flex items-start gap-2 text-xs leading-relaxed">
+                    <span className="material-symbols-outlined text-amber-600 text-[18px] shrink-0 mt-0.5">
+                      lightbulb
+                    </span>
+                    <div>
+                      <span className="font-bold">Tips Kurikulum: </span>
+                      {MODULE_DETAILS_EXTRA[selectedDetailModule.id].tips}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Target Mapel Info */}
+              <div className="p-3 rounded-xl bg-[#eff4ff] border border-[#dce9ff] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="material-symbols-outlined text-[#0051d5] text-[18px]">subject</span>
+                  <div>
+                    <span className="text-[11px] text-[#444651] block">Mata Pelajaran Aktif:</span>
+                    <span className="font-bold text-xs text-[#0b1c30]">{activeSubject}</span>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-md bg-white text-[#00236f] text-[10px] font-bold border border-[#dce9ff]">
+                  Fase D (SMP)
+                </span>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedDetailModule(null)}
+                className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-200 text-xs font-semibold transition-colors"
+              >
+                Tutup
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleLaunchModule(selectedDetailModule)}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00236f] to-[#0051d5] hover:opacity-95 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all hover:scale-[1.01]"
+              >
+                <span>{selectedDetailModule.actionText || 'Buka Generator'}</span>
+                <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

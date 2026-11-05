@@ -41,7 +41,7 @@ export const BantuanModal: React.FC<BantuanModalProps> = ({ isOpen, onClose }) =
                 Pusat Bantuan & Panduan Guru
               </h3>
               <p className="text-xs text-[#444651]">
-                Petunjuk penggunaan platform EduMerdeka SMP Nusantara EduStudio
+                Petunjuk penggunaan platform EduStudio Kurikulum Merdeka SMP
               </p>
             </div>
           </div>

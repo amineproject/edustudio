@@ -42,17 +42,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         <div className="flex flex-col">
           {/* Logo & Brand Header */}
-          <div className="flex items-center justify-between px-6 py-6 border-b border-[#f1f5f9]">
+          <div className="flex items-center justify-between px-6 py-5 border-b border-[#f1f5f9]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#1e3a8a] to-[#2563eb] text-white flex items-center justify-center shadow-sm font-bold text-lg">
-                <span className="material-symbols-outlined text-[24px]">school</span>
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#00236f] via-[#0051d5] to-[#316bf3] text-white flex items-center justify-center shadow-sm font-bold text-lg relative">
+                <span className="material-symbols-outlined text-[22px]">auto_stories</span>
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 ring-2 ring-white"></span>
               </div>
               <div className="flex flex-col">
-                <span className="font-bold text-[17px] text-[#1e3a8a] leading-tight font-['Plus_Jakarta_Sans']">
-                  EduMerdeka SMP
-                </span>
-                <span className="text-xs text-[#64748b] font-medium">
-                  Fase D (Kelas 7-9)
+                <div className="flex items-center gap-1.5">
+                  <span className="font-extrabold text-[18px] text-[#00236f] tracking-tight leading-tight font-['Plus_Jakarta_Sans']">
+                    EduStudio
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-[#e5eeff] text-[#0051d5] font-bold text-[9px] uppercase tracking-wider">
+                    SMP
+                  </span>
+                </div>
+                <span className="text-[11px] text-[#64748b] font-medium leading-tight">
+                  Kurikulum Merdeka • Fase D
                 </span>
               </div>
             </div>
